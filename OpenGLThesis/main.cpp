@@ -2,6 +2,8 @@
 
 int main(int argc, char *argv[])
 {
+	//init test
+
 	SDL_Init(SDL_INIT_EVERYTHING);
 
 	SDL_Delay(1000);
