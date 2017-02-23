@@ -18,10 +18,20 @@ int main(int argc, char *argv[])
 	glewExperimental = GL_TRUE;
 	glewInit();
 
-	GLuint vertexBuffer;
-	glGenBuffers(1, &vertexBuffer);
+	float vertices[] = {
+		0.0f, 0.5f,
+		0.5f, -0.5f,
+		-0.5f, -0.5f
+	};
 
-	printf("%u\n", vertexBuffer);
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+
 
 	SDL_Event windowEvent;
 	while (true)
