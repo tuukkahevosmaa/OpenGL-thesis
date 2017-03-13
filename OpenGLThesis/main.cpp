@@ -4,6 +4,22 @@
 #include <SDL_opengl.h>
 #include <stdio.h>
 
+const GLchar* vertexSource =
+"#version 440\n"
+"in vec2 position;"
+"void main()"
+"{"
+"gl_Position = vec4(position, 0.0, 1.0);"
+"}";
+
+const GLchar* fragmentSource =
+"#version 440\n"
+"out vec4 outColor;"
+"void main()"
+"{"
+"outColor = vec4(1.0, 1.0, 1.0, 1.0);"
+"}";
+
 int main(int argc, char *argv[])
 {
 	SDL_Init(SDL_INIT_VIDEO);
@@ -18,6 +34,10 @@ int main(int argc, char *argv[])
 	glewExperimental = GL_TRUE;
 	glewInit();
 
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
 	float vertices[] = {
 		0.0f, 0.5f,
 		0.5f, -0.5f,
@@ -31,7 +51,26 @@ int main(int argc, char *argv[])
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, &vertexSource, NULL);
+	glCompileShader(vertexShader);
 
+	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
+	glCompileShader(fragmentShader);
+
+	//Tarkista varjostinten compailaus tässä!
+
+	GLuint shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vertexShader);
+	glAttachShader(shaderProgram, fragmentShader);
+
+	glLinkProgram(shaderProgram);
+	glUseProgram(shaderProgram);
+
+	GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
+	glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(posAttrib);
 
 	SDL_Event windowEvent;
 	while (true)
@@ -40,6 +79,8 @@ int main(int argc, char *argv[])
 		{
 			if (windowEvent.type == SDL_QUIT) break;
 		}
+
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		SDL_GL_SwapWindow(window);
 	}
