@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <stdio.h>
+#include <chrono>
 
 const GLchar* vertexSource =
 "#version 440\n"
@@ -14,14 +15,17 @@ const GLchar* vertexSource =
 
 const GLchar* fragmentSource =
 "#version 440\n"
+"uniform vec3 triangleColor;"
 "out vec4 outColor;"
 "void main()"
 "{"
-"outColor = vec4(1.0, 1.0, 1.0, 1.0);"
+"outColor = vec4(triangleColor, 1.0);"
 "}";
 
 int main(int argc, char *argv[])
 {
+	auto t_start = std::chrono::high_resolution_clock::now();
+
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
@@ -72,6 +76,9 @@ int main(int argc, char *argv[])
 	glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(posAttrib);
 
+	GLint uniColor = glGetUniformLocation(shaderProgram, "triangleColor");
+	glUniform3f(uniColor, 1.0f, 0.0f, 0.0f);
+
 	SDL_Event windowEvent;
 	while (true)
 	{
@@ -79,6 +86,11 @@ int main(int argc, char *argv[])
 		{
 			if (windowEvent.type == SDL_QUIT) break;
 		}
+
+		auto t_now = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
+
+		glUniform3f(uniColor, (sin(time*4.0f) + 1.0f) / 2.0f, 0.0f, 0.0f);
 
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
