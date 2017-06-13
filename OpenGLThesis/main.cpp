@@ -3,6 +3,9 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <SOIL/SOIL.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <stdio.h>
 #include <iostream>
 #include <vector>
@@ -15,11 +18,14 @@ const GLchar* vertexSource =
 "in vec2 texcoord;"
 "out vec3 Color;"
 "out vec2 Texcoord;"
+"uniform mat4 model;"
+"uniform mat4 view;"
+"uniform mat4 proj;"
 "void main()"
 "{"
 "Color = color;"
 "Texcoord = texcoord;"
-"gl_Position = vec4(position, 0.0, 1.0);"
+"gl_Position = proj * view * model * vec4(position, 0.0, 1.0);"
 "}";
 
 const GLchar* fragmentSource =
@@ -152,6 +158,26 @@ int main(int argc, char *argv[])
 
 	//glGenerateMipmap(GL_TEXTURE_2D);
 
+	// Transformations
+	glm::mat4 model;
+	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	GLint uniModel = glGetUniformLocation(shaderProgram, "model");
+	glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
+
+	glm::mat4 view = glm::lookAt(
+		glm::vec3(1.2f, 1.2f, 1.2f),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 1.0f)
+	);
+	GLint uniView = glGetUniformLocation(shaderProgram, "view");
+	glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
+
+	glm::mat4 proj = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 1.0f, 10.0f);
+	GLint uniProj = glGetUniformLocation(shaderProgram, "proj");
+	glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
+
+	// Main event loop
 	SDL_Event windowEvent;
 	while (true)
 	{
