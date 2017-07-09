@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 	// Z-buffer
 	glEnable(GL_DEPTH_TEST);
 
-	GLuint vao; // Vertex array object
+	GLuint vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
