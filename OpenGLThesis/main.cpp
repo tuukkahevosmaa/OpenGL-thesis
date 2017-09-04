@@ -43,6 +43,7 @@ const GLchar* fragmentSource =
 "uniform sampler2D tex;"
 "uniform vec3 lightColor;"
 "uniform vec3 lightPos;"
+"uniform vec3 viewPos;"
 "void main()"
 "{"
 "float ambientStrength = 0.1;"
@@ -51,7 +52,12 @@ const GLchar* fragmentSource =
 "vec3 lightDir = normalize(lightPos - FragPos);"
 "float diff = max(dot(norm, lightDir), 0.0);"
 "vec3 diffuse = diff * lightColor;"
-"vec3 result = (ambient + diffuse) * Color;"
+"float specularStrength = 0.5;"
+"vec3 viewDir = normalize(viewPos - FragPos);"
+"vec3 reflectDir = reflect(-lightDir, norm);"
+"float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);"
+"vec3 specular = specularStrength * spec * lightColor;"
+"vec3 result = (ambient + diffuse + specular) * Color;"
 //"outColor = texture(tex, Texcoord);"
 "outColor = vec4(result, 1.0);"
 "}";
@@ -284,15 +290,20 @@ int main(int argc, char *argv[])
 	GLint uniModel = glGetUniformLocation(shaderProgram, "model");
 	glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));*/
 
+	glm::vec3 viewPos(1.0f, 1.0f, 1.5f);
+
 	glm::mat4 view = glm::lookAt(
-		glm::vec3(2.0f, 1.0f, 1.5f),
-		glm::vec3(-3.0f, -1.0f, 0.0f),
+		viewPos,
+		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 1.0f, 0.0f)
 	);
 	GLint uniView = glGetUniformLocation(shaderProgram, "view");
 	glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
 
-	glm::mat4 proj = glm::perspective(glm::radians(80.0f), 800.0f / 600.0f, 1.0f, 10.0f);
+	GLint uniViewPos = glGetUniformLocation(shaderProgram, "viewPos");
+	glUniform3fv(uniViewPos, 1, glm::value_ptr(viewPos));
+
+	glm::mat4 proj = glm::perspective(glm::radians(80.0f), 1024.0f / 768.0f, 0.5f, 10.0f);
 	GLint uniProj = glGetUniformLocation(shaderProgram, "proj");
 	glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 
@@ -331,12 +342,12 @@ int main(int argc, char *argv[])
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		model = glm::translate(model, lightPos);
+		/*model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.15f));
 		uniModel = glGetUniformLocation(shaderProgram, "model");
 		glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
 
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArrays(GL_TRIANGLES, 0, 36);*/
 
 
 		SDL_GL_SwapWindow(window);
